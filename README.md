@@ -1,26 +1,31 @@
-Calenfree
+# Calenfree
 
-Are you a manager that needs to schedule an interview with a candidate and offer them multiple time slots? do you do that by manually looking at your calendar and copying each free timeslot?
-this is an easier way to do that
-just generate an ics file of your calendar and this script will look at the file and generate a list of free timeslots for you for the next week.
+## Overview
+Tired of manually checking your calendar to find free time slots for meetings? **Calenfree** automatically extracts your available time from a calendar file and displays them in a clean, easy-to-share format.
 
-CURRENT STATE: only be able to look at one week ahead (5 working days)
-INPUT: ics file path
-OUTPUT: a text based list of available time slots with date, day
-FORMAT: "I have the following time slots available:
-    1.   MM-DD-YYYY HH:MM am/pm- HH:MM am/pm
-    2.   MM-DD-YYYY HH:MM am/pm- HH:MM am/pm"
+## What Does It Do?
+- Takes your calendar file (ICS format) as input
+- Scans your schedule for the current work week (Monday-Friday, 9 AM - 5 PM)
+- Finds all free time slots between your meetings
+- Displays results with day of week, date, and time
 
+## How to Use
+1. Export your calendar as an ICS file (most calendar apps support this)
+2. Run the script: `python3 parser.py`
+3. Enter the path to your ICS file when prompted
+4. Get a list of all available time slots for the week
 
-Filters:
-1. Starting time (immediately? from tomorrow?)
-2. how long to look for? (available times for a week? 3 days?)
-3. length of the time slot (15mins? 30 mins?)
-4. any buffer time before/after the meeting? (how long if so- 5mins?)
-5. 
+## Current Features
+- Scans 5 working days ahead
+- Works with timezone-aware calendar events
+- Handles recurring events
+- Shows availability during work hours only (9 AM - 5 PM)
+- Displays day name with each time slot
 
-
-Future additions:
-1. mutiple collaborators? (two calendars from two managers?)
-2. support for multiple calendars (google, outlook etc)
-3. easy to send email with available time slots? 
+## Planned Features
+- [ ] Customize work hours
+- [ ] Set minimum time slot duration
+- [ ] Add buffer time before/after meetings
+- [ ] Support multiple calendars
+- [ ] Integration with Google Calendar and Outlook
+- [ ] Email sharing of available slots 
