@@ -5,15 +5,16 @@ from dateutil.rrule import rrulestr
 
 def workweek():
     today = datetime.now()
-    if today.weekday() == 5:
-        week_start = today + timedelta(days=2)
-    elif today.weekday() == 6:
-        week_start = today + timedelta(days=1)
-    else:
-        week_start = today
-    
-    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
-    week_end = week_start + timedelta(days=4)
+    week_start = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    # Find the end date by adding days until we have 5 working days from today
+    day_count = 0
+    current = week_start
+    while day_count < 5:
+        if current.weekday() < 5:  # Monday=0, Friday=4
+            day_count += 1
+        if day_count < 5:
+            current += timedelta(days=1)
+    week_end = current.replace(hour=23, minute=59, second=59, microsecond=999999)
     print(f"Workweek: {week_start.date()} to {week_end.date()}")
     return week_start, week_end, time(9, 0), time(17, 0)
 
@@ -48,38 +49,43 @@ def find_free_times(busy_times, week_start, week_end, workhour_start, workhour_e
     free_times = []
     busy_times = sorted(busy_times, key=lambda x: x[0])
     
-    for day in range(5):
-        day_start = datetime.combine((week_start + timedelta(days=day)).date(), workhour_start)
-        day_end = datetime.combine((week_start + timedelta(days=day)).date(), workhour_end)
-        day_busy = []
-        
-        for b_start, b_end in busy_times:
-            if b_start.date() == day_start.date():
-                b_start = max(b_start, day_start)
-                b_end = min(b_end, day_end)
-                day_busy.append((b_start, b_end))
-        
-        merged = []
-        for b in sorted(day_busy):
-            if not merged or b[0] > merged[-1][1]:
-                merged.append(list(b))
-            else:
-                merged[-1][1] = max(merged[-1][1], b[1])
-        
-        prev_end = day_start
-        for b in merged:
-            if b[0] > prev_end:
+    # Iterate through working days only (Mon-Fri)
+    current_day = week_start
+    while current_day <= week_end:
+        if current_day.weekday() < 5:  # Monday=0, Friday=4
+            day_start = datetime.combine(current_day.date(), workhour_start)
+            day_end = datetime.combine(current_day.date(), workhour_end)
+            day_busy = []
+            
+            for b_start, b_end in busy_times:
+                if b_start.date() == day_start.date():
+                    b_start = max(b_start, day_start)
+                    b_end = min(b_end, day_end)
+                    day_busy.append((b_start, b_end))
+            
+            merged = []
+            for b in sorted(day_busy):
+                if not merged or b[0] > merged[-1][1]:
+                    merged.append(list(b))
+                else:
+                    merged[-1][1] = max(merged[-1][1], b[1])
+            
+            prev_end = day_start
+            for b in merged:
+                if b[0] > prev_end:
+                    free_start = max(prev_end, day_start)
+                    free_end = min(b[0], day_end)
+                    if free_start < free_end:
+                        free_times.append((free_start, free_end))
+                prev_end = max(prev_end, b[1])
+            
+            if prev_end < day_end:
                 free_start = max(prev_end, day_start)
-                free_end = min(b[0], day_end)
+                free_end = min(day_end, day_end)
                 if free_start < free_end:
                     free_times.append((free_start, free_end))
-            prev_end = max(prev_end, b[1])
         
-        if prev_end < day_end:
-            free_start = max(prev_end, day_start)
-            free_end = min(day_end, day_end)
-            if free_start < free_end:
-                free_times.append((free_start, free_end))
+        current_day += timedelta(days=1)
     
     print("Free times:")
     for start, end in free_times:
